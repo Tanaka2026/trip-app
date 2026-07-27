@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>旅費を記録する | 一人旅ログ</title>
+<style>
+body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+		sans-serif;
+	background-color: #f5f7fa;
+	margin: 0;
+	padding: 16px;
+	color: #333;
+}
+
+.form-container {
+	max-width: 480px;
+	margin: 0 auto;
+	background: #ffffff;
+	padding: 24px;
+	border-radius: 12px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+h1 {
+	font-size: 1.25rem;
+	margin-top: 0;
+	margin-bottom: 20px;
+	text-align: center;
+}
+
+.form-group {
+	margin-bottom: 16px;
+}
+
+label {
+	display: block;
+	font-size: 0.9rem;
+	font-weight: bold;
+	margin-bottom: 6px;
+}
+
+input[type="text"], input[type="number"], input[type="date"], select,
+	textarea {
+	width: 100%;
+	padding: 10px;
+	font-size: 1rem;
+	border: 1px solid #ccc;
+	border-radius: 6px;
+	box-sizing: border-box;
+	font-family: inherit;
+}
+
+textarea {
+	height: 80px;
+	resize: vertical;
+}
+
+.cost-inputs {
+	background: #f8f9fa;
+	padding: 12px;
+	border-radius: 8px;
+	margin-bottom: 16px;
+}
+
+.total-box {
+	background: #eef6ff;
+	padding: 12px;
+	border-radius: 6px;
+	text-align: right;
+	font-size: 1.1rem;
+	font-weight: bold;
+	color: #0056b3;
+}
+
+.submit-btn {
+	width: 100%;
+	background-color: #007bff;
+	color: white;
+	border: none;
+	padding: 14px;
+	font-size: 1rem;
+	font-weight: bold;
+	border-radius: 8px;
+	cursor: pointer;
+	margin-top: 10px;
+}
+
+.submit-btn:hover {
+	background-color: #0056b3;
+}
+/* 保存済みデータの確認エリア */
+.history-box {
+	margin-top: 30px;
+	padding-top: 20px;
+	border-top: 2px dashed #ddd;
+}
+
+.history-card {
+	background: #f8f9fa;
+	border: 1px solid #e0e0e0;
+	border-radius: 8px;
+	padding: 12px;
+	margin-bottom: 10px;
+}
+
+.history-card h3 {
+	margin: 0 0 6px 0;
+	font-size: 1rem;
+}
+
+.history-card p {
+	margin: 4px 0;
+	font-size: 0.85rem;
+	color: #666;
+}
+</style>
+</head>
+<body>
+
+	<div class="form-container">
+		<h1>📝 旅費を記録する</h1>
+
+		<form id="tripForm">
+			<!-- タイトル -->
+			<div class="form-group">
+				<label for="title">旅行タイトル</label> <input type="text" id="title"
+					placeholder="例：金沢1泊2日 食い倒れ一人旅" required>
+			</div>
+
+			<!-- 行った日付（追加！） -->
+			<div class="form-group">
+				<label for="tripDate">行った日付</label> <input type="date" id="tripDate"
+					required>
+			</div>
+
+			<!-- 行き先 -->
+			<div class="form-group">
+				<label for="location">行き先（都道府県・エリア）</label> <input type="text"
+					id="location" placeholder="例：石川県・金沢" required>
+			</div>
+
+			<!-- 泊数 -->
+			<div class="form-group">
+				<label for="stayType">日程</label> <select id="stayType">
+					<option value="日帰り">日帰り</option>
+					<option value="1泊2日" selected>1泊2日</option>
+					<option value="2泊3日">2泊3日</option>
+					<option value="3泊以上">3泊以上</option>
+				</select>
+			</div>
+
+			<!-- 費目の入力と自動計算 -->
+			<div class="cost-inputs">
+				<label>💰 使ったお金の内訳（円）</label>
+				<div class="form-group">
+					<input type="number" class="cost-input" id="transport"
+						placeholder="交通費" min="0">
+				</div>
+				<div class="form-group">
+					<input type="number" class="cost-input" id="hotel"
+						placeholder="宿泊費" min="0">
+				</div>
+				<div class="form-group">
+					<input type="number" class="cost-input" id="food" placeholder="食費"
+						min="0">
+				</div>
+				<div class="form-group">
+					<input type="number" class="cost-input" id="other"
+						placeholder="その他（観光・お土産など）" min="0">
+				</div>
+
+				<div class="total-box">
+					合計: <span id="totalAmount">0</span> 円
+				</div>
+			</div>
+
+			<!-- 自由メモ欄（追加！） -->
+			<div class="form-group">
+				<label for="memo">旅のメモ（美味しかったお店、反省点など）</label>
+				<textarea id="memo"
+					placeholder="例：近江町市場のお寿司が絶品だった。帰りの新幹線は指定席を取っておいて正解。"></textarea>
+			</div>
+
+			<!-- 公開設定 -->
+			<div class="form-group">
+				<label for="isPublic">公開設定</label> <select id="isPublic">
+					<option value="true">みんなに公開する</option>
+					<option value="false">自分だけの非公開メモにする</option>
+				</select>
+			</div>
+
+			<button type="submit" class="submit-btn">投稿・保存する</button>
+		</form>
+
+		<!-- 保存された履歴が表示される場所 -->
+		<div class="history-box">
+			<h2>🧳 保存された旅の記録</h2>
+			<div id="historyList">まだ記録はありません。</div>
+		</div>
+	</div>
+
+	<script>
+    // 今日のおすすめ日付を初期値としてセット
+    document.getElementById('tripDate').valueAsDate = new Date();
+
+    // 金額入力時に自動で合計を計算する処理
+    const costInputs = document.querySelectorAll('.cost-input');
+    const totalAmountSpan = document.getElementById('totalAmount');
+
+    costInputs.forEach(input => {
+      input.addEventListener('input', () => {
+        let total = 0;
+        costInputs.forEach(i => {
+          total += Number(i.value) || 0;
+        });
+        totalAmountSpan.textContent = total.toLocaleString();
+      });
+    });
+
+    // 画面を開いたときに、保存されているデータをブラウザから読み出して表示する
+    function loadSavedTrips() {
+      const historyList = document.getElementById('historyList');
+      const savedTrips = JSON.parse(localStorage.getItem('myTrips')) || [];
+
+      if (savedTrips.length === 0) {
+        historyList.innerHTML = '<p>まだ記録はありません。</p>';
+        return;
+      }
+
+      historyList.innerHTML = savedTrips.map(trip => `
+        <div class="history-card">
+          <h3>${trip.title} (${trip.stayType})</h3>
+          <p>📅 日付: ${trip.tripDate} | 📍 ${trip.location}</p>
+          <p>💰 合計: <strong>${trip.total.toLocaleString()}円</strong></p>
+          ${trip.memo ? `<p>📝 メモ: ${trip.memo}</p>` : ''}
+        </div>
+      `).join('');
+    }
+
+    // 「投稿・保存する」ボタンを押したときの処理
+    document.getElementById('tripForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const newTrip = {
+        title: document.getElementById('title').value,
+        tripDate: document.getElementById('tripDate').value,
+        location: document.getElementById('location').value,
+        stayType: document.getElementById('stayType').value,
+        costs: {
+          transport: Number(document.getElementById('transport').value) || 0,
+          hotel: Number(document.getElementById('hotel').value) || 0,
+          food: Number(document.getElementById('food').value) || 0,
+          other: Number(document.getElementById('other').value) || 0,
+        },
+        total: Number(totalAmountSpan.textContent.replace(/,/g, '')),
+        memo: document.getElementById('memo').value,
+        isPublic: document.getElementById('isPublic').value === 'true',
+        createdAt: new Date().toLocaleDateString()
+      };
+
+      // 既存のデータを取得して新しいデータを追加
+      const savedTrips = JSON.parse(localStorage.getItem('myTrips')) || [];
+      savedTrips.unshift(newTrip); // 新しいデータを先頭に追加
+
+      // ブラウザに保存（LocalStorage）
+      localStorage.setItem('myTrips', JSON.stringify(savedTrips));
+
+      // 画面の履歴一覧を再更新
+      loadSavedTrips();
+
+      // フォームをリセット
+      document.getElementById('tripForm').reset();
+      document.getElementById('tripDate').valueAsDate = new Date();
+      totalAmountSpan.textContent = '0';
+
+      alert('旅の記録をブラウザに保存しました！');
+    });
+
+    // 最初の読み込み時に履歴を表示
+    loadSavedTrips();
+  </script>
+
+</body>
+</html>
